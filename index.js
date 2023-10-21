@@ -70,7 +70,40 @@ app.post('/api/users/:_id/exercises', async function(req, res){
   return res.json({ error: '' })
 })
 
+app.get('/api/users/:_id/logs', async function(req, res){
+  let { from, to, limit } = req.query;
 
+  let user = await User.findById(req.params._id);
+  if(user) {
+    let query = Exercise.find({userid: user._id})
+
+    let startDate = new Date(from)
+    if(!isNaN(startDate))
+      query.where('date').gt(startDate)
+    
+    let endDate = new Date(to)
+    if(!isNaN(endDate))
+      query.where('date').lt(endDate)
+    query.select({description: 1, duration: 1, date: 1, _id: 0})
+
+    if(limit && !isNaN(limit))
+      query.limit(parseInt(limit))
+
+    let exercises = await query.exec()
+
+    return res.json({
+      _id: user._id,
+      username: user.username,
+      count: exercises.length,
+      log: exercises.map(function(el){return {
+        description: el.description,
+        duration: el.duration,
+        date: el.date.toDateString()
+      }})
+    })
+  }
+  return res.json({error: ''})
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
