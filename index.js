@@ -31,6 +31,22 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+app.post('/api/users', async function(req, res){
+  let { username } = req.body;
+  if(username && typeof username == 'string') {
+    let existing = await User.findOne({ username: username }).exec()
+    if(existing)
+      return res.json({username: existing.username, _id: existing._id})
+    let user = await User.create({ username: username })
+    return res.json(user)
+  }
+  return res.json({error: ''})
+})
+
+app.get('/api/users', async function(req, res){
+  let users = await User.find({}).select({ username: 1, _id: 1 });
+  return res.json(users)
+})
 
 
 
