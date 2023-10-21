@@ -48,6 +48,27 @@ app.get('/api/users', async function(req, res){
   return res.json(users)
 })
 
+app.post('/api/users/:_id/exercises', async function(req, res){
+  let { description, duration, date } = req.body;
+  let user = await User.findById(req.params._id).exec()
+  if(user) {
+    let exercise = await Exercise.create({ 
+      userid: user._id,
+      description: description,
+      duration: duration,
+      date: date? date : new Date()
+    })
+    if(exercise)
+      return res.json({ 
+        description: exercise.description,
+        duration: exercise.duration,
+        date: exercise.date.toDateString(),
+        _id: user._id,
+        username: user.username
+      })
+  }
+  return res.json({ error: '' })
+})
 
 
 
